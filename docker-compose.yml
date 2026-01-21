@@ -1,0 +1,32 @@
+version: '2.4'
+
+services:
+  db:
+    image: postgres:15
+    container_name: meu-postgres
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=root
+    ports:
+      - "5432:5432"  # Porta padrão do banco: 5432 fora, 5432 dentro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d root"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: minha-app-go
+    ports:
+      - "8000:5432"  # O PULO DO GATO: Sua App roda na 5432 (por causa do PORT=5432 abaixo), mas você acessa via 8000
+    environment:
+      - HOST=db
+      - USER=root
+      - PASSWORD=root
+      - DBNAME=root
+      - PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy

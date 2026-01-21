@@ -1,0 +1,81 @@
+name: Go CI/CD Completo
+
+on: [push, pull_request]
+
+jobs:
+  qualidade-e-testes: # Unificamos para o script ter o banco disponível
+    runs-on: ubuntu-latest
+    
+    services: # Movido para cá para o script poder rodar testes de integração
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: root
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      # Instalamos o linter manualmente para o seu script poder chamá-lo
+      - name: Instalar Golangci-lint
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+
+      - name: Rodar Minha Ferramenta de Qualidade (Linter + Testes + Cobertura)
+        env:
+          HOST: localhost
+          USER: root
+          PASSWORD: root
+          DBNAME: root
+          PORT: 5432
+        run: |
+          chmod +x ./quality-check.sh
+          ./quality-check.sh  # ESSE CARA FAZ TUDO AGORA
+
+  build:
+    needs: qualidade-e-testes
+  
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      
+      - name: Compilando o Binário
+        run: go build -o main-${{ matrix.os }}
+
+      - name: Teste de fumaça (Unitário)
+        run: go test -v -run TestVerificaStatusCodeDaSaudacaoComParametro
+
+      - name: Upload do Executável
+        uses: actions/upload-artifact@v4
+        with:
+          name: executavel-${{ matrix.os }}
+          path: main-${{ matrix.os }}
+          
+      - name: Upload do Relatório de Cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-cobertura
+          path: coverage.html

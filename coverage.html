@@ -1,0 +1,307 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/guilhermeonrails/api-go-gin/controllers/controller.go (55.3%)</option>
+				
+				<option value="file1">github.com/guilhermeonrails/api-go-gin/database/db.go (75.0%)</option>
+				
+				<option value="file2">github.com/guilhermeonrails/api-go-gin/main.go (0.0%)</option>
+				
+				<option value="file3">github.com/guilhermeonrails/api-go-gin/models/alunos.go (66.7%)</option>
+				
+				<option value="file4">github.com/guilhermeonrails/api-go-gin/routes/route.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package controllers
+
+import (
+        "net/http"
+
+        "github.com/gin-gonic/gin"
+        "github.com/guilhermeonrails/api-go-gin/database"
+        "github.com/guilhermeonrails/api-go-gin/models"
+)
+
+func Saudacoes(c *gin.Context) <span class="cov8" title="1">{
+        nome := c.Params.ByName("nome")
+        c.JSON(200, gin.H{
+                "API diz": "E ai " + nome + ", Tudo beleza?",
+        })
+}</span>
+
+func TodosAlunos(c *gin.Context) <span class="cov8" title="1">{
+        var alunos []models.Aluno
+        database.DB.Find(&amp;alunos)
+        c.JSON(200, alunos)
+}</span>
+
+func CriarNovoAluno(c *gin.Context) <span class="cov0" title="0">{
+        var aluno models.Aluno
+        if err := c.ShouldBindJSON(&amp;aluno); err != nil </span><span class="cov0" title="0">{
+                c.JSON(http.StatusBadRequest, gin.H{
+                        "erro": err.Error()})
+                return
+        }</span>
+        <span class="cov0" title="0">if err := models.ValidaDadosDeAluno(&amp;aluno); err != nil </span><span class="cov0" title="0">{
+                c.JSON(http.StatusBadRequest, gin.H{
+                        "erro": err.Error()})
+                return
+        }</span>
+        <span class="cov0" title="0">database.DB.Create(&amp;aluno)
+        c.JSON(http.StatusOK, aluno)</span>
+}
+
+func BuscarAlunoPorID(c *gin.Context) <span class="cov8" title="1">{
+        var aluno models.Aluno
+        id := c.Params.ByName("id")
+        database.DB.First(&amp;aluno, id)
+        if aluno.ID == 0 </span><span class="cov0" title="0">{
+                c.JSON(http.StatusNotFound, gin.H{
+                        "Not Found": "Aluno não encontrado"})
+                return
+        }</span>
+        <span class="cov8" title="1">c.JSON(http.StatusOK, aluno)</span>
+}
+
+func DeletarAluno(c *gin.Context) <span class="cov8" title="1">{
+        var aluno models.Aluno
+        id := c.Params.ByName("id")
+        database.DB.Delete(&amp;aluno, id)
+        c.JSON(http.StatusOK, gin.H{"data": "Aluno deletado com sucesso"})
+}</span>
+
+func EditarAluno(c *gin.Context) <span class="cov8" title="1">{
+        var aluno models.Aluno
+        id := c.Params.ByName("id")
+        database.DB.First(&amp;aluno, id)
+        if err := c.ShouldBindJSON(&amp;aluno); err != nil </span><span class="cov0" title="0">{
+                c.JSON(http.StatusBadRequest, gin.H{
+                        "erro": err.Error()})
+                return
+        }</span>
+        <span class="cov8" title="1">if err := models.ValidaDadosDeAluno(&amp;aluno); err != nil </span><span class="cov0" title="0">{
+                c.JSON(http.StatusBadRequest, gin.H{
+                        "erro": err.Error()})
+                return
+        }</span>
+        <span class="cov8" title="1">database.DB.Save(&amp;aluno)
+        c.JSON(http.StatusOK, aluno)</span>
+}
+
+func BuscaAlunoPorCPF(c *gin.Context) <span class="cov8" title="1">{
+        var aluno models.Aluno
+        cpf := c.Param("cpf")
+        database.DB.Where(&amp;models.Aluno{CPF: cpf}).First(&amp;aluno)
+
+        if aluno.ID == 0 </span><span class="cov0" title="0">{
+                c.JSON(http.StatusNotFound, gin.H{
+                        "Not Found": "Aluno não encontrado"})
+                return
+        }</span>
+        <span class="cov8" title="1">c.JSON(http.StatusOK, aluno)</span>
+}
+
+func ExibePaginaIndex(c *gin.Context) <span class="cov0" title="0">{
+        var alunos []models.Aluno
+        database.DB.Find(&amp;alunos)
+        c.HTML(http.StatusOK, "index.html", gin.H{
+                "alunos": alunos,
+        })
+}</span>
+
+func RotaNaoEncontrada(c *gin.Context) <span class="cov0" title="0">{
+        c.HTML(http.StatusNotFound, "404.html", nil)
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package database
+
+import (
+        "log"
+    "os"
+        "github.com/guilhermeonrails/api-go-gin/models"
+        "gorm.io/driver/postgres"
+        "gorm.io/gorm"
+)
+
+var (
+        DB  *gorm.DB
+        err error
+)
+
+func ConectaComBancoDeDados() <span class="cov8" title="1">{
+        // Pega o host das variáveis de ambiente
+        host := os.Getenv("HOST") 
+        stringDeConexao := "host="+host+" user="+os.Getenv("USER")+" password="+os.Getenv("PASSWORD")+" dbname="+os.Getenv("DBNAME")+" port="+os.Getenv("PORT")+" sslmode=disable"
+        
+        DB, err = gorm.Open(postgres.Open(stringDeConexao), &amp;gorm.Config{})
+        if err != nil </span><span class="cov0" title="0">{
+                log.Panic("Erro ao conectar com banco de dados")
+        }</span>
+
+        // CORREÇÃO AQUI: Capturamos o erro do AutoMigrate
+        <span class="cov8" title="1">err = DB.AutoMigrate(&amp;models.Aluno{})
+        if err != nil </span><span class="cov0" title="0">{
+                log.Panic("Erro ao rodar as migrações no banco: " + err.Error())
+        }</span>
+}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package main
+
+import (
+        "github.com/guilhermeonrails/api-go-gin/database"
+        "github.com/guilhermeonrails/api-go-gin/routes"
+)
+
+func main() <span class="cov0" title="0">{
+        database.ConectaComBancoDeDados()
+        routes.HandleRequest()
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package models
+
+import (
+        "gopkg.in/validator.v2"
+        "gorm.io/gorm"
+)
+
+type Aluno struct {
+        gorm.Model
+        Nome string `json:"nome" validate:"nonzero"`
+        RG   string `json:"rg" validate:"len=9, regexp=^[0-9]*$"`
+        CPF  string `json:"cpf" validate:"len=11, regexp=^[0-9]*$"`
+}
+
+func ValidaDadosDeAluno(aluno *Aluno) error <span class="cov8" title="1">{
+        if err := validator.Validate(aluno); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package routes
+
+import (
+        "log" // Adicione este import
+        "github.com/gin-gonic/gin"
+        "github.com/guilhermeonrails/api-go-gin/controllers"
+)
+
+func HandleRequest() <span class="cov0" title="0">{
+        r := gin.Default()
+        r.LoadHTMLGlob("templates/*")
+        r.Static("/assets", "./assets")
+        r.GET("/:nome", controllers.Saudacoes)
+        r.GET("/alunos", controllers.TodosAlunos)
+        r.GET("/alunos/:id", controllers.BuscarAlunoPorID)
+        r.POST("/alunos", controllers.CriarNovoAluno)
+        r.DELETE("/alunos/:id", controllers.DeletarAluno)
+        r.PATCH("/alunos/:id", controllers.EditarAluno)
+        r.GET("/alunos/cpf/:cpf", controllers.BuscaAlunoPorCPF)
+        r.GET("/alunos/", controllers.BuscaAlunoPorCPF)
+        r.GET("/index", controllers.ExibePaginaIndex)
+        r.NoRoute(controllers.RotaNaoEncontrada)
+        
+        // CORREÇÃO: Verificando se o servidor iniciou corretamente
+        err := r.Run()
+        if err != nil </span><span class="cov0" title="0">{
+                log.Panic("Não foi possível iniciar o servidor Gin: ", err)
+        }</span>
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
