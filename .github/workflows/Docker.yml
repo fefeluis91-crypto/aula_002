@@ -1,7 +1,10 @@
 name: Docker
 
 on: 
-  workflow_call:
+  workflow_run:
+    workflows: ["Go CI/CD Completo"] 
+    types:
+      - completed
 
 jobs:
 
