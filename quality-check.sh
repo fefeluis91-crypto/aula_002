@@ -18,7 +18,7 @@ fi
 # 2. Roda os Testes e Gera Cobertura
 echo "2. Rodando Testes e calculando cobertura..."
 # O comando abaixo roda os testes e salva o resultado em coverage.out
-# O segredo está no -coverpkg=./...
+
 go test -v -coverpkg=./... -coverprofile=coverage.out ./...
 
 if [ $? -ne 0 ]; then
